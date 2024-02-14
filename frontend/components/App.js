@@ -1,4 +1,4 @@
-import React from 'react' // 👈 you'll need the reducer hook
+import React, {useReducer} from 'react' // 👈 you'll need the reducer hook
 import Quotes from './Quotes'
 import QuoteForm from './QuoteForm'
 
@@ -33,36 +33,114 @@ const quotes = [
 ]
 
 // 👇 create your initial state object here
+// 👇 create your reducer function here
+const initialState = {
+  displayAllQuotes: true,
+  highlightedQuoteId: null,
+  quotes: [
+    {
+      id: getNextId(),
+      quoteText: "Don't cry because it's over, smile because it happened.",
+      authorName: "Dr. Seuss",
+      apocryphal: false,
+    },
+    {
+      id: getNextId(),
+      quoteText: "So many books, so little time.",
+      authorName: "Frank Zappa",
+      apocryphal: false,
+    },
+    {
+      id: getNextId(),
+      quoteText: "Be yourself; everyone else is already taken.",
+      authorName: "Oscar Wilde",
+      apocryphal: false,
+    },
+  ],
+};
 
-const reducer = (state, action) => {
-  // 👇 implement your reducer here using the action types above
-}
+
+  const reducer = (state, action) => {
+    switch (action.type) {
+      // Add your cases here
+      case CREATE_QUOTE:
+        return {
+          ...state,
+          quotes: [...state.quotes, action.payload],
+        };
+        case DELETE_QUOTE:
+          return {
+            ...state,
+            quotes: state.quotes.filter(quote => quote.id !== action.payload),
+          };
+        case EDIT_QUOTE_AUTHENTICITY:
+          return {
+            ...state,
+            quotes: state.quotes.map(quote => {
+              if (quote.id === action.payload) {
+                return { ...quote, apocryphal: !quote.apocryphal };
+              }
+              return quote;
+            }),
+          };
+        case SET_HIGHLIGHTED_QUOTE:
+          return {
+            ...state,
+            highlightedQuote: state.highlightedQuote === action.payload ? null : action.payload
+          };
+        case TOGGLE_VISIBILITY:
+          return {
+            ...state,
+            displayAllQuotes: !state.displayAllQuotes,
+          };
+      default:
+        return state;
+    }
+  }
+
+
+
 
 export default function App() {
   // 👇 use the reducer hook to spin up state and dispatch
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  const createQuote = ({ authorName, quoteText }) => {
+ const createQuote = ({ authorName, quoteText }) => {
     // 👇 use the helper function above to create a new quote
+    const newQuote = {id:getNextId(), authorName, quoteText, apocryphal: false};
+    // 👇 use the dispatch function to create a new quote
+    dispatch({ type: CREATE_QUOTE, payload: newQuote });
     // 👇 and dispatch it over to the reducer
   }
   const deleteQuote = id => {
     // 👇 implement
+    dispatch({ type: DELETE_QUOTE, payload: id });
+
   }
   const editQuoteAuthenticity = id => {
     // 👇 implement
+    dispatch({ type: EDIT_QUOTE_AUTHENTICITY, payload: id });
   }
   const setHighlightedQuote = id => {
     // 👇 implement
+    dispatch({ type: SET_HIGHLIGHTED_QUOTE, payload: id });
   }
   const toggleVisibility = () => {
     // 👇 implement
+    dispatch({ type: TOGGLE_VISIBILITY });
   }
 
   return (
     <div id="mp">
       <h2>Module Project</h2>
       <Quotes
-        quotes={quotes}
+        quotes={state.quotes}
+        highlightedQuote={state.highlightedQuote}
+        deleteQuote={deleteQuote}
+        editQuoteAuthenticity={editQuoteAuthenticity}
+        setHighlightedQuote={setHighlightedQuote}
+        toggleVisibility={toggleVisibility}
+        displayAllQuotes={state.displayAllQuotes}
       // 👇 lots of props are missing! Check the Quotes component
 
       />
